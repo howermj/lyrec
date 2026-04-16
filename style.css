@@ -279,6 +279,19 @@ header h1 {
   background: var(--bg-card);
 }
 
+.search-item-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+  margin-right: 10px;
+}
+
+.search-item-thumb-empty {
+  background: var(--bg-card-border);
+}
+
 .search-item-text {
   flex: 1;
   min-width: 0;
@@ -387,6 +400,20 @@ header h1 {
 }
 
 /* ---- Result card ---- */
+
+.overlay-card .result-thumb {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  object-fit: cover;
+  margin: 0 auto 14px auto;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  display: none;
+}
+
+.overlay-card .result-thumb.visible {
+  display: block;
+}
 
 .result-badge {
   display: inline-block;

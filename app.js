@@ -21,6 +21,7 @@ var splashImage = document.getElementById('splash-image');
 var splashImg = document.getElementById('splash-img');
 
 var resultOverlay = document.getElementById('result-overlay');
+var resultThumb = document.getElementById('result-thumb');
 var resultBadge = document.getElementById('result-badge');
 var resultArtist = document.getElementById('result-artist');
 var resultAlbum = document.getElementById('result-album');
@@ -273,7 +274,11 @@ function handleSearch() {
   for (var j = 0; j < results.length; j++) {
     var r = results[j];
     var badge = getBadgeInfo(r.album.recommendation);
+    var thumbHtml = r.album.thumb
+      ? '<img class="search-item-thumb" src="data:image/jpeg;base64,' + r.album.thumb + '" alt="">'
+      : '<div class="search-item-thumb search-item-thumb-empty"></div>';
     html += '<div class="search-item" data-barcode="' + r.barcode + '">' +
+      thumbHtml +
       '<div class="search-item-text">' +
       '<div class="search-item-artist">' + escHtml(r.album.artist) + '</div>' +
       '<div class="search-item-album">' + escHtml(r.album.album) + '</div>' +
@@ -406,6 +411,17 @@ function getTrackText(album) {
 }
 
 function showResult(album, barcode) {
+  // Thumbnail
+  if (album.thumb) {
+    resultThumb.src = 'data:image/jpeg;base64,' + album.thumb;
+    resultThumb.style.display = 'block';
+    resultThumb.style.marginLeft = 'auto';
+    resultThumb.style.marginRight = 'auto';
+  } else {
+    resultThumb.src = '';
+    resultThumb.style.display = 'none';
+  }
+
   var badge = getBadgeInfo(album.recommendation);
   resultBadge.textContent = badge.text;
   resultBadge.className = 'result-badge ' + badge.cls;
@@ -436,6 +452,8 @@ function hideOverlay(el) {
 function dismissResult() {
   hideOverlay(resultOverlay);
   hideOverlay(notfoundOverlay);
+  resultThumb.style.display = 'none';
+  resultThumb.src = '';
   lastCode = '';
   lastTime = 0;
   if (videoStream) {
