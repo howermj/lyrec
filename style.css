@@ -235,6 +235,17 @@ header h1 {
   display: none !important;
 }
 
+/* Version footer */
+
+#version {
+  text-align: center;
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: 0.4;
+  padding: 8px 0;
+  flex-shrink: 0;
+}
+
 /* html5-qrcode overrides */
 
 #reader__scan_region {
