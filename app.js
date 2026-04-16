@@ -2,12 +2,9 @@
   'use strict';
 
   var albumData = null;
-  var scanning = false;
-  var detector = null;
-  var videoStream = null;
-  var scanInterval = null;
+  var html5QrCode = null;
+  var scannerRunning = false;
 
-  var video = document.getElementById('video');
   var scanBtn = document.getElementById('scan-btn');
   var statusEl = document.getElementById('data-status');
 
@@ -49,41 +46,19 @@
       });
   }
 
-  // ---- Barcode detection ----
-
-  function initDetector() {
-    if (typeof BarcodeDetector === 'undefined') {
-      return false;
-    }
-    try {
-      detector = new BarcodeDetector({
-        formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e']
-      });
-      return true;
-    } catch (e) {
-      console.error('BarcodeDetector init failed:', e);
-      return false;
-    }
-  }
+  // ---- Barcode lookup ----
 
   function normalizeBarcode(raw) {
-    // Strip non-digits
-    var digits = raw.replace(/\D/g, '');
-    // If 13 digits starting with 0, also generate 12-digit UPC-A variant
-    // (some sidecars store without leading zero)
-    return digits;
+    return raw.replace(/\D/g, '');
   }
 
   function lookupBarcode(raw) {
     if (!albumData || !albumData.albums) return null;
     var code = normalizeBarcode(raw);
-    // Direct lookup
     if (albumData.albums[code]) return albumData.albums[code];
-    // Try adding leading zero (UPC-A 12 -> EAN-13 13)
     if (code.length === 12 && albumData.albums['0' + code]) {
       return albumData.albums['0' + code];
     }
-    // Try removing leading zero (EAN-13 -> UPC-A)
     if (code.length === 13 && code[0] === '0' && albumData.albums[code.substring(1)]) {
       return albumData.albums[code.substring(1)];
     }
@@ -92,62 +67,54 @@
 
   // ---- Scanner ----
 
+  function onScanSuccess(decodedText) {
+    if (!scannerRunning) return;
+    scannerRunning = false;
+    html5QrCode.pause(true);
+    handleScan(decodedText);
+  }
+
   function startScanner() {
-    if (!initDetector()) {
-      statusEl.innerHTML = '<span class="error">Barcode scanner not supported on this browser</span>';
-      return;
+    if (!html5QrCode) {
+      html5QrCode = new Html5Qrcode('reader');
     }
 
-    navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    })
-    .then(function (stream) {
-      videoStream = stream;
-      video.srcObject = stream;
-      video.classList.add('active');
-      scanning = true;
-      scanBtn.textContent = 'Stop Scanner';
+    var config = {
+      fps: 10,
+      qrbox: { width: 280, height: 100 },
+      formatsToSupport: [
+        Html5QrcodeSupportedFormats.EAN_13,
+        Html5QrcodeSupportedFormats.EAN_8,
+        Html5QrcodeSupportedFormats.UPC_A,
+        Html5QrcodeSupportedFormats.UPC_E
+      ]
+    };
 
-      scanInterval = setInterval(function () {
-        if (!scanning || video.readyState < 2) return;
-        detector.detect(video)
-          .then(function (barcodes) {
-            if (barcodes.length > 0) {
-              handleScan(barcodes[0].rawValue);
-            }
-          })
-          .catch(function () {});
-      }, 250);
-    })
-    .catch(function (err) {
-      statusEl.innerHTML = '<span class="error">Camera access denied</span>';
-      console.error('Camera error:', err);
+    html5QrCode.start(
+      { facingMode: 'environment' },
+      config,
+      onScanSuccess
+    ).then(function () {
+      scannerRunning = true;
+      scanBtn.textContent = 'Stop Scanner';
+    }).catch(function (err) {
+      statusEl.innerHTML = '<span class="error">Camera: ' + err + '</span>';
+      console.error('Scanner start error:', err);
     });
   }
 
   function stopScanner() {
-    scanning = false;
-    if (scanInterval) {
-      clearInterval(scanInterval);
-      scanInterval = null;
+    scannerRunning = false;
+    if (html5QrCode) {
+      html5QrCode.stop().then(function () {
+        scanBtn.textContent = 'Start Scanner';
+      }).catch(function () {
+        scanBtn.textContent = 'Start Scanner';
+      });
     }
-    if (videoStream) {
-      videoStream.getTracks().forEach(function (t) { t.stop(); });
-      videoStream = null;
-    }
-    video.srcObject = null;
-    video.classList.remove('active');
-    scanBtn.textContent = 'Start Scanner';
   }
 
   function handleScan(rawValue) {
-    // Pause scanning while showing result
-    scanning = false;
-    if (scanInterval) {
-      clearInterval(scanInterval);
-      scanInterval = null;
-    }
-
     var album = lookupBarcode(rawValue);
     if (album) {
       showResult(album, rawValue);
@@ -195,26 +162,21 @@
   function dismissResult() {
     resultContainer.classList.add('hidden');
     notFoundContainer.classList.add('hidden');
-    // Resume scanning
-    if (videoStream) {
-      scanning = true;
-      scanInterval = setInterval(function () {
-        if (!scanning || video.readyState < 2) return;
-        detector.detect(video)
-          .then(function (barcodes) {
-            if (barcodes.length > 0) {
-              handleScan(barcodes[0].rawValue);
-            }
-          })
-          .catch(function () {});
-      }, 250);
+    if (html5QrCode) {
+      try {
+        html5QrCode.resume();
+        scannerRunning = true;
+      } catch (e) {
+        // Scanner was stopped, not paused -- restart
+        startScanner();
+      }
     }
   }
 
   // ---- Event handlers ----
 
   scanBtn.addEventListener('click', function () {
-    if (videoStream) {
+    if (scannerRunning) {
       stopScanner();
     } else {
       startScanner();

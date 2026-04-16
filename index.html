@@ -23,13 +23,7 @@
     </div>
 
     <div id="scanner-container">
-      <video id="video" playsinline autoplay muted></video>
-      <div id="scan-region">
-        <div class="corner tl"></div>
-        <div class="corner tr"></div>
-        <div class="corner bl"></div>
-        <div class="corner br"></div>
-      </div>
+      <div id="reader"></div>
       <button id="scan-btn" class="btn-primary" disabled>Start Scanner</button>
     </div>
 
@@ -71,6 +65,7 @@
     </div>
   </div>
 
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
