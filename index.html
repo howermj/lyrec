@@ -2,10 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#1a1a2e">
+  <meta name="apple-mobile-web-app-title" content="lyrec">
+  <meta name="theme-color" content="#1C2B2D">
+  <!-- Splash screens for common iPhone sizes -->
+  <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="apple-touch-icon.png">
+  <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="apple-touch-icon.png">
+  <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="apple-touch-icon.png">
+  <link rel="apple-touch-startup-image" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3)" href="apple-touch-icon.png">
   <title>lyrec</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -16,6 +22,7 @@
     <header>
       <h1>lyrec</h1>
       <p class="subtitle">Lyra's Album Recommendations</p>
+      <button id="help-btn" aria-label="Help">?</button>
     </header>
 
     <div id="status-bar">
@@ -29,17 +36,41 @@
       </div>
       <video id="video" playsinline autoplay muted></video>
       <button id="scan-btn" class="btn-primary" disabled>Start Scanner</button>
+
+      <div id="input-area">
+        <div class="input-row">
+          <input id="barcode-input" class="input-field" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Enter barcode" autocomplete="off">
+          <button id="barcode-go" class="input-go" aria-label="Lookup barcode">Go</button>
+        </div>
+        <div class="input-row">
+          <input id="search-input" class="input-field" type="search" placeholder="Search artist or album" autocomplete="off">
+        </div>
+        <div id="search-results"></div>
+      </div>
     </div>
 
-    <div id="result-container" class="hidden">
-      <div id="result-card">
-        <div id="result-badge"></div>
-        <div id="result-artist"></div>
-        <div id="result-album"></div>
+    <div id="history-section" class="hidden">
+      <div id="history-header">
+        <span>Recent scans</span>
+        <button id="history-clear">Clear</button>
+      </div>
+      <div id="history-list"></div>
+    </div>
+
+    <!-- Result overlay -->
+    <div id="result-overlay" class="overlay">
+      <div class="overlay-card">
+        <div id="result-badge" class="result-badge"></div>
+        <div id="result-artist" class="result-artist"></div>
+        <div id="result-album" class="result-album"></div>
         <div class="result-details">
           <div class="detail-row">
             <span class="detail-label">Completion</span>
             <span id="result-completion" class="detail-value"></span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Tracks</span>
+            <span id="result-tracks" class="detail-value"></span>
           </div>
           <div class="detail-row">
             <span class="detail-label">Format</span>
@@ -59,15 +90,66 @@
       </div>
     </div>
 
-    <div id="not-found-container" class="hidden">
-      <div id="not-found-card">
+    <!-- Not found overlay -->
+    <div id="notfound-overlay" class="overlay">
+      <div class="overlay-card">
         <div class="not-found-icon">?</div>
         <div class="not-found-text">Not in library</div>
-        <div id="not-found-barcode" class="barcode-display"></div>
+        <div id="notfound-barcode" class="barcode-display"></div>
         <button id="dismiss-nf-btn" class="btn-secondary">Scan Next</button>
       </div>
     </div>
-    <footer id="version">v2.2</footer>
+
+    <!-- Help overlay -->
+    <div id="help-overlay" class="overlay">
+      <div class="overlay-card">
+        <div class="help-title">How to use lyrec</div>
+
+        <div class="help-section">
+          <h3>Scanning</h3>
+          <p>Tap Start Scanner and point your camera at the barcode on the back of a CD, vinyl, or cassette. lyrec checks your library and tells you whether to buy it.</p>
+          <p>You can also type a barcode number or search by artist and album name.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Recommendations</h3>
+          <div class="help-badge-row">
+            <span class="help-badge-sample badge-buy">Buy</span>
+            <span class="help-badge-label">Album is incomplete -- buy to fill gaps</span>
+          </div>
+          <div class="help-badge-row">
+            <span class="help-badge-sample badge-consider">Consider</span>
+            <span class="help-badge-label">Unknown completion or mixed format</span>
+          </div>
+          <div class="help-badge-row">
+            <span class="help-badge-sample badge-upgrade">Upgrade</span>
+            <span class="help-badge-label">Complete but low-quality lossy -- upgrade when convenient</span>
+          </div>
+          <div class="help-badge-row">
+            <span class="help-badge-sample badge-wait">Wait</span>
+            <span class="help-badge-label">Complete, high-quality lossy -- no rush</span>
+          </div>
+          <div class="help-badge-row">
+            <span class="help-badge-sample badge-skip">Skip</span>
+            <span class="help-badge-label">Already lossless and complete -- you're good</span>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h3>Data freshness</h3>
+          <p>The status bar shows when your library data was last updated. Data refreshes automatically when you open the app with a network connection.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Splash image</h3>
+          <p>Tap the image on the main screen to cycle through Lyra's artwork.</p>
+        </div>
+
+        <button id="help-dismiss" class="btn-secondary">Got it</button>
+      </div>
+    </div>
+
+    <footer id="version">v3.0</footer>
   </div>
 
   <script type="module" src="app.js"></script>
