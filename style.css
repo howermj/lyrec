@@ -240,8 +240,7 @@ header h1 {
 #version {
   text-align: center;
   font-size: 10px;
-  color: var(--text-dim);
-  opacity: 0.4;
+  color: var(--text);
   padding: 8px 0;
   flex-shrink: 0;
 }
