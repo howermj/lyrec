@@ -1,4 +1,4 @@
-var CACHE_NAME = 'lyrec-v4';
+var CACHE_NAME = 'lyrec-v5';
 var SHELL_FILES = [
   './',
   './index.html',

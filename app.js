@@ -70,8 +70,7 @@
   // ---- Scanner ----
 
   var scannerConfig = {
-    fps: 2,
-    qrbox: { width: 300, height: 120 },
+    fps: 3,
     formatsToSupport: [
       Html5QrcodeSupportedFormats.EAN_13,
       Html5QrcodeSupportedFormats.EAN_8,
