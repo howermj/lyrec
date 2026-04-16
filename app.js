@@ -4,6 +4,8 @@
   var albumData = null;
   var html5QrCode = null;
   var scannerRunning = false;
+  var lastScannedCode = '';
+  var lastScanTime = 0;
 
   var scanBtn = document.getElementById('scan-btn');
   var statusEl = document.getElementById('data-status');
@@ -67,11 +69,33 @@
 
   // ---- Scanner ----
 
+  var scannerConfig = {
+    fps: 2,
+    qrbox: { width: 300, height: 120 },
+    formatsToSupport: [
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.EAN_8,
+      Html5QrcodeSupportedFormats.UPC_A,
+      Html5QrcodeSupportedFormats.UPC_E
+    ]
+  };
+
   function onScanSuccess(decodedText) {
-    if (!scannerRunning) return;
+    // Debounce: ignore same barcode within 3 seconds
+    var now = Date.now();
+    if (decodedText === lastScannedCode && (now - lastScanTime) < 3000) {
+      return;
+    }
+    lastScannedCode = decodedText;
+    lastScanTime = now;
+
+    // Stop scanner fully, then show result
     scannerRunning = false;
-    html5QrCode.pause(true);
-    handleScan(decodedText);
+    html5QrCode.stop().then(function () {
+      handleScan(decodedText);
+    }).catch(function () {
+      handleScan(decodedText);
+    });
   }
 
   function startScanner() {
@@ -79,20 +103,9 @@
       html5QrCode = new Html5Qrcode('reader');
     }
 
-    var config = {
-      fps: 10,
-      qrbox: { width: 280, height: 100 },
-      formatsToSupport: [
-        Html5QrcodeSupportedFormats.EAN_13,
-        Html5QrcodeSupportedFormats.EAN_8,
-        Html5QrcodeSupportedFormats.UPC_A,
-        Html5QrcodeSupportedFormats.UPC_E
-      ]
-    };
-
     html5QrCode.start(
       { facingMode: 'environment' },
-      config,
+      scannerConfig,
       onScanSuccess
     ).then(function () {
       scannerRunning = true;
@@ -162,15 +175,11 @@
   function dismissResult() {
     resultContainer.classList.add('hidden');
     notFoundContainer.classList.add('hidden');
-    if (html5QrCode) {
-      try {
-        html5QrCode.resume();
-        scannerRunning = true;
-      } catch (e) {
-        // Scanner was stopped, not paused -- restart
-        startScanner();
-      }
-    }
+    // Clear debounce so the same barcode can be re-scanned
+    lastScannedCode = '';
+    lastScanTime = 0;
+    // Full restart -- resume is unreliable on iOS Safari
+    startScanner();
   }
 
   // ---- Event handlers ----
