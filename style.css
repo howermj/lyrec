@@ -80,6 +80,31 @@ header h1 {
   min-height: 0;
 }
 
+#splash-image {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#splash-img {
+  width: 180px;
+  height: 180px;
+  border-radius: 24px;
+  object-fit: cover;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+
+#splash-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 8px;
+  opacity: 0.6;
+}
+
 #video {
   width: 100%;
   max-height: 60vh;

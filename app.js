@@ -11,6 +11,27 @@ var lastTime = 0;
 var video = document.getElementById('video');
 var scanBtn = document.getElementById('scan-btn');
 var statusEl = document.getElementById('data-status');
+var splashImage = document.getElementById('splash-image');
+var splashImg = document.getElementById('splash-img');
+
+// ---- Splash image selector ----
+
+var splashImages = [
+  'images/lyrec_icon_1024_edge_1.png',
+  'images/lyrec_icon_1024_edge_2.png',
+  'images/lyrec_icon_1024_edge_3.png',
+  'images/lyrec_icon_1024_edge_4.png'
+];
+
+var splashIndex = parseInt(localStorage.getItem('lyrec_splash') || '2', 10);
+if (splashIndex < 0 || splashIndex >= splashImages.length) splashIndex = 2;
+splashImg.src = splashImages[splashIndex];
+
+splashImage.addEventListener('click', function () {
+  splashIndex = (splashIndex + 1) % splashImages.length;
+  splashImg.src = splashImages[splashIndex];
+  localStorage.setItem('lyrec_splash', String(splashIndex));
+});
 
 var resultContainer = document.getElementById('result-container');
 var resultBadge = document.getElementById('result-badge');
@@ -92,6 +113,7 @@ async function startScanner() {
     videoStream = stream;
     video.srcObject = stream;
     video.style.display = 'block';
+    splashImage.style.display = 'none';
 
     // Request continuous autofocus if supported
     var track = stream.getVideoTracks()[0];
@@ -142,6 +164,7 @@ function stopScanner() {
   }
   video.srcObject = null;
   video.style.display = 'none';
+  splashImage.style.display = 'flex';
   scanBtn.textContent = 'Start Scanner';
 }
 

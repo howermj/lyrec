@@ -1,10 +1,14 @@
-var CACHE_NAME = 'lyrec-v7';
+var CACHE_NAME = 'lyrec-v8';
 var SHELL_FILES = [
   './',
   './index.html',
   './style.css',
   './app.js',
-  './manifest.json'
+  './manifest.json',
+  './images/lyrec_icon_1024_edge_1.png',
+  './images/lyrec_icon_1024_edge_2.png',
+  './images/lyrec_icon_1024_edge_3.png',
+  './images/lyrec_icon_1024_edge_4.png'
 ];
 var DATA_FILE = './data/store-check.json';
 
