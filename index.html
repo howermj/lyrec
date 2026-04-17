@@ -7,7 +7,6 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="lyrec">
   <meta name="theme-color" content="#1C2B2D">
-  <!-- Splash screens for common iPhone sizes -->
   <link rel="apple-touch-startup-image" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3)" href="apple-touch-icon.png">
   <link rel="apple-touch-startup-image" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3)" href="apple-touch-icon.png">
   <link rel="apple-touch-startup-image" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)" href="apple-touch-icon.png">
@@ -22,39 +21,43 @@
     <header>
       <h1>lyrec</h1>
       <p class="subtitle">Lyra's Album Recommendations</p>
-      <button id="help-btn" aria-label="Help">?</button>
+      <button id="menu-btn" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </header>
 
     <div id="status-bar">
-      <span id="data-status">Loading...</span>
+      <div id="data-status-line1">Loading...</div>
+      <div id="data-status-line2"></div>
     </div>
 
-    <div id="scanner-container">
-      <div id="splash-image">
-        <img id="splash-img" src="images/lyrec_icon_1024_edge_3.png" alt="lyrec">
-        <div id="splash-hint">tap image to change</div>
+    <!-- Scanner section (left side in landscape) -->
+    <div id="scanner-section">
+      <div id="scanner-container">
+        <div id="splash-image">
+          <img id="splash-img" src="images/lyrec_icon_1024_edge_3.png" alt="lyrec">
+          <div id="splash-hint">tap image to change</div>
+        </div>
+        <video id="video" playsinline autoplay muted></video>
+        <div id="scan-indicator" class="hidden">
+          <div class="scan-pulse"></div>
+          <span>scanning...</span>
+          <button id="restart-cam-btn" aria-label="Restart camera">&#x21BB;</button>
+        </div>
       </div>
-      <video id="video" playsinline autoplay muted></video>
       <button id="scan-btn" class="btn-primary" disabled>Start Scanner</button>
-
-      <div id="input-area">
-        <div class="input-row">
-          <input id="barcode-input" class="input-field" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Enter barcode" autocomplete="off">
-          <button id="barcode-go" class="input-go" aria-label="Lookup barcode">Go</button>
-        </div>
-        <div class="input-row">
-          <input id="search-input" class="input-field" type="search" placeholder="Search artist or album" autocomplete="off">
-        </div>
-        <div id="search-results"></div>
-      </div>
     </div>
 
-    <div id="history-section" class="hidden">
-      <div id="history-header">
-        <span>Recent scans</span>
-        <button id="history-clear">Clear</button>
+    <!-- Input section (right side in landscape) -->
+    <div id="input-section">
+      <div class="input-row">
+        <input id="barcode-input" class="input-field" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="Enter barcode" autocomplete="off">
+        <button id="barcode-go" class="input-go" aria-label="Lookup barcode">Go</button>
       </div>
-      <div id="history-list"></div>
+      <div class="input-row">
+        <input id="search-input" class="input-field" type="search" placeholder="Search artist or album" autocomplete="off">
+      </div>
+      <div id="search-results"></div>
     </div>
 
     <!-- Result overlay -->
@@ -101,15 +104,50 @@
       </div>
     </div>
 
-    <!-- Help overlay -->
-    <div id="help-overlay" class="overlay">
-      <div class="overlay-card">
-        <div class="help-title">How to use lyrec</div>
+    <!-- Menu bottom sheet -->
+    <div id="menu-overlay" class="overlay sheet-overlay">
+      <div class="sheet-card">
+        <div class="sheet-handle"></div>
+        <div class="menu-title">Menu</div>
+        <button class="menu-item" data-page="getting-started">
+          <span class="menu-item-icon">&#x2726;</span>
+          <div class="menu-item-text">
+            <div class="menu-item-label">Getting Started</div>
+            <div class="menu-item-sub">How to use lyrec</div>
+          </div>
+          <span class="menu-item-chevron">&rsaquo;</span>
+        </button>
+        <button class="menu-item" data-page="history">
+          <span class="menu-item-icon">&#x23F1;</span>
+          <div class="menu-item-text">
+            <div class="menu-item-label">History</div>
+            <div class="menu-item-sub" id="menu-history-sub">No recent scans</div>
+          </div>
+          <span class="menu-item-chevron">&rsaquo;</span>
+        </button>
+        <button class="menu-item" data-page="about">
+          <span class="menu-item-icon">&#x2139;</span>
+          <div class="menu-item-text">
+            <div class="menu-item-label">About</div>
+            <div class="menu-item-sub">Version &amp; credits</div>
+          </div>
+          <span class="menu-item-chevron">&rsaquo;</span>
+        </button>
+        <button id="menu-close" class="btn-secondary">Close</button>
+      </div>
+    </div>
 
+    <!-- Getting Started page -->
+    <div id="gs-page" class="page">
+      <div class="page-header">
+        <button class="page-back" data-target="gs-page" aria-label="Back">&lsaquo;</button>
+        <div class="page-title">Getting Started</div>
+      </div>
+      <div class="page-content">
         <div class="help-section">
           <h3>Scanning</h3>
           <p>Tap Start Scanner and point your camera at the barcode on the back of a CD, vinyl, or cassette. lyrec checks your library and tells you whether to buy it.</p>
-          <p>You can also type a barcode number or search by artist and album name.</p>
+          <p>You can also type a barcode number manually or search by artist and album name.</p>
         </div>
 
         <div class="help-section">
@@ -138,7 +176,17 @@
 
         <div class="help-section">
           <h3>Data freshness</h3>
-          <p>The status bar shows when your library data was last updated. Data refreshes automatically when you open the app with a network connection.</p>
+          <p>The status bar shows library coverage and when your data was last updated. Data refreshes automatically when you open the app with a network connection.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>History</h3>
+          <p>Every scan is saved for 24 hours. Open the menu and tap History to review what you scanned today, grouped by recommendation. Tap any item to see the full result again.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Dismissing results</h3>
+          <p>Tap "Scan Next", tap outside the card, or swipe down to dismiss a result and return to scanning.</p>
         </div>
 
         <div class="help-section">
@@ -146,11 +194,87 @@
           <p>Tap the image on the main screen to cycle through Lyra's artwork.</p>
         </div>
 
-        <button id="help-dismiss" class="btn-secondary">Got it</button>
+        <div class="help-section">
+          <h3>Scanner stuck?</h3>
+          <p>If the scanner hasn't detected a barcode after several seconds, tap the circular arrow button on the camera to restart it. The app will also auto-restart the scanner if it stalls for more than 20 seconds.</p>
+        </div>
       </div>
     </div>
 
-    <footer id="version">v3.1</footer>
+    <!-- History page -->
+    <div id="history-page" class="page">
+      <div class="page-header">
+        <button class="page-back" data-target="history-page" aria-label="Back">&lsaquo;</button>
+        <div class="page-title">History</div>
+        <button id="history-clear-btn" class="page-action">Clear</button>
+      </div>
+      <div class="page-content">
+        <div id="history-tabs">
+          <button class="history-tab active" data-view="recent">Recent</button>
+          <button class="history-tab" data-view="summary">Summary</button>
+        </div>
+        <div id="history-recent"></div>
+        <div id="history-summary" class="hidden"></div>
+      </div>
+    </div>
+
+    <!-- About page -->
+    <div id="about-page" class="page">
+      <div class="page-header">
+        <button class="page-back" data-target="about-page" aria-label="Back">&lsaquo;</button>
+        <div class="page-title">About</div>
+      </div>
+      <div class="page-content">
+        <div class="about-hero">
+          <img src="icon-192.png" alt="lyrec" class="about-icon">
+          <div class="about-name">lyrec</div>
+          <div class="about-tagline">Lyra's Album Recommendations</div>
+          <div class="about-version" id="about-version">v3.2</div>
+        </div>
+
+        <div class="help-section">
+          <h3>What it does</h3>
+          <p>lyrec is a field companion for music collectors. Scan a UPC barcode on a CD, vinyl, or cassette at a record store and instantly know whether it's worth buying based on what's already in your library.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Library stats</h3>
+          <div class="about-stat-row">
+            <span class="about-stat-label">Albums indexed</span>
+            <span class="about-stat-value" id="about-indexed">--</span>
+          </div>
+          <div class="about-stat-row">
+            <span class="about-stat-label">Total processed</span>
+            <span class="about-stat-value" id="about-total">--</span>
+          </div>
+          <div class="about-stat-row">
+            <span class="about-stat-label">UPC coverage</span>
+            <span class="about-stat-value" id="about-coverage">--</span>
+          </div>
+          <div class="about-stat-row">
+            <span class="about-stat-label">With artwork</span>
+            <span class="about-stat-value" id="about-artwork">--</span>
+          </div>
+          <div class="about-stat-row">
+            <span class="about-stat-label">Data updated</span>
+            <span class="about-stat-value" id="about-generated">--</span>
+          </div>
+        </div>
+
+        <div class="help-section">
+          <h3>Technology</h3>
+          <p>lyrec is a Progressive Web App. Barcode scanning uses the ZXing WASM engine via the barcode-detector polyfill. All data is cached locally -- the app works fully offline at the store.</p>
+          <p>Library data is generated nightly by R70 (part of LyraTools) from Phase A sidecar metadata and pushed to GitHub Pages.</p>
+        </div>
+
+        <div class="help-section">
+          <h3>Credits</h3>
+          <p>Built by Mike Hower with Lyra (Claude). Artwork by DALL-E. Source on <a href="https://github.com/howermj/lyrec" target="_blank" rel="noopener">GitHub</a>.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer id="version">v3.2</footer>
   </div>
 
   <script type="module" src="app.js"></script>
